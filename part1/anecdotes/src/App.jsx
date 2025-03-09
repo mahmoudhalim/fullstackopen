@@ -25,17 +25,20 @@ const App = () => {
     setVotes(newVotes)
   }
 
-  const randomNumber = Math.round(Math.random() * 7);
+  const randomNumber = () => Math.round(Math.random() * (anecdotes.length - 1));
   const [selected, setSelected] = useState(0);
-  const [votes, setVotes] = useState(Array(8).fill(0));
+  const [votes, setVotes] = useState(Array(anecdotes.length).fill(0));
   const maxVotes = votes.indexOf(Math.max(...votes));
   return (
     <div>
       <h1>Anecdote of the day</h1>
-      {anecdotes[selected]} <br />
+      <div style={{height: 100}}>{anecdotes[selected]}</div> <br />
       has {votes[selected]} votes <br />
       <Button text="vote" onClick={vote} />
-      <Button text="next anecdote" onClick={() => setSelected(randomNumber)} />
+      <Button
+        text="next anecdote"
+        onClick={() => setSelected(randomNumber())}
+      />
       <h1>Anecdote with most votes</h1>
       <div>{anecdotes[maxVotes]}</div>
       has {votes[maxVotes]} votes <br />
@@ -43,4 +46,4 @@ const App = () => {
   );
 };
 
-export default App;
+export  default App;
