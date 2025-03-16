@@ -1,75 +1,35 @@
 import { useEffect, useState } from "react";
 import server from "./services/person";
-const Notification = ({ message, className }) => {
-  if (message === "") {
-    return null;
-  }
-
-  return <div className={className}>{message}</div>;
-};
-const Filter = (props) => {
-  return (
-    <>
-      filter shown with:
-      <input onChange={props.search} />
-    </>
-  );
-};
-
-const PersonForm = (props) => {
-  return (
-    <>
-      <form onSubmit={props.handleSubmit}>
-        <div>
-          name: <input onChange={props.handleInputName} />
-        </div>
-        <div>
-          number: <input onChange={props.handleInputNumber} />
-        </div>
-        <div>
-          <button type="submit">add</button>
-        </div>
-      </form>
-    </>
-  );
-};
-
-const Persons = ({ persons, deletePerson }) => {
-  return (
-    <>
-      <ul>
-        {persons.map((p) => (
-          <li key={p.name}>
-            {p.name} {p.number}{" "}
-            <button onClick={() => deletePerson(p.id)}>delete</button>
-          </li>
-        ))}
-      </ul>
-    </>
-  );
-};
+import { PersonForm } from "./components/PersonForm";
+import { Persons } from "./components/Persons";
+import { Filter } from "./components/Filter";
+import { Notification } from "./components/Notification";
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const [searchWord, setSearchWord] = useState("");
-  const [notificationMessage, setNotificationMessage] = useState("");
-  const [isSuccessful, setIsSuccessful] = useState(true);
+  const [notificationMessage, setNotificationMessage] = useState({
+    message: "",
+  });
   useEffect(() => {
     server.getAll().then((p) => setPersons(p));
   }, []);
 
+  const notify = (message, isError) => {
+    setNotificationMessage({
+      message,
+      isError,
+    });
+    setTimeout(() => setNotificationMessage({ message: "" }), 5000);
+  };
   const handleSubmit = (event) => {
     event.preventDefault();
     const newPerson = {
       name: newName,
       number: newNumber,
     };
-    setNotificationMessage(`${newPerson.name} was added`);
-    setIsSuccessful(true)
-    setTimeout(() => 
-      setNotificationMessage("")
-    , 5000);
+    notify(`${newPerson.name} was added`, false);
     if (persons.every((p) => p.name != newPerson.name)) {
       console.log(newPerson);
       // setPersons(persons.concat(newPerson));
@@ -102,10 +62,7 @@ const App = () => {
     if (confirm(`Delete ${deletedPerson.name} ?`)) {
       setPersons(persons.filter((p) => p.id != id));
       server.deletePerson(id).catch(() => {
-        setNotificationMessage(`${deletedPerson.name} was already removed`);
-        setIsSuccessful(false);
-        setTimeout(() => setNotificationMessage("")
-        , 5000);
+        notify(`${deletedPerson.name} was already removed`, true);
       });
     }
   };
@@ -116,7 +73,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
-      <Notification message={notificationMessage} className={isSuccessful? "success": "error"} />
+      <Notification message={notificationMessage.message} isError={notificationMessage.isError} />
       <Filter search={handleSearch} />
       <h2>add a new</h2>
       <PersonForm
